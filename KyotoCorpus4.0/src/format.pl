@@ -4,48 +4,51 @@ use encoding 'euc-jp';
 use open IO => ':encoding(euc-jp)';
 binmode(STDERR, ':encoding(euc-jp)');
 
-# ¥³¡¼¥Ñ¥¹¤Î¥¿¥¤¥×
-$TYPE = "·ÁÂÖÁÇ¡¦¹½Ê¸¥³¡¼¥Ñ¥¹";
-# $TYPE = "Ê¸Ì®¥³¡¼¥Ñ¥¹";
+# ã‚³ãƒ¼ãƒ‘ã‚¹ã®ã‚¿ã‚¤ãƒ—
+# Type of corpus
+$TYPE = "å½¢æ…‹ç´ ãƒ»æ§‹æ–‡ã‚³ãƒ¼ãƒ‘ã‚¹"; # Morpheme / syntax corpus
+# $TYPE = "æ–‡è„ˆã‚³ãƒ¼ãƒ‘ã‚¹"; # Context corpus
 
 #
-# ÂĞ¾İ³°¤È¤¹¤ëµ­»ö¡¤Ê¸
+# å¯¾è±¡å¤–ã¨ã™ã‚‹è¨˜äº‹ï¼Œæ–‡
+# Articles excluded, articles, sentences
 #
-$neglect_aid{"950101140"} = 1;	# Áª¼ê¾Ò²ğ
-$neglect_aid{"950110251"} = 1;	# ³ÆÃÏ¤ÎÃÏ¿Ì¶¯ÅÙ
-$neglect_aid{"950112293"} = 1;	# ½ĞÉÊ¼Ô°ìÍ÷
-$neglect_aid{"950118034"} = 1;	# ¿ÍÌ¾°ìÍ÷
-$neglect_aid{"950118035"} = 1;	# ¿ÍÌ¾°ìÍ÷
-$neglect_aid{"950118045"} = 1;	# ¿ÍÌ¾°ìÍ÷
-$neglect_aid{"950118046"} = 1;	# ¿ÍÌ¾°ìÍ÷
-$neglect_aid{"950118240"} = 1;	# ¿ÍÌ¾°ìÍ÷
-$neglect_aid{"950118241"} = 1;	# ¿ÍÌ¾°ìÍ÷
-$neglect_aid{"950118243"} = 1;	# ¿ÍÌ¾°ìÍ÷
-$neglect_aid{"950118244"} = 1;	# ¿ÍÌ¾°ìÍ÷
-$neglect_aid{"950118245"} = 1;	# ¿ÍÌ¾°ìÍ÷
-$neglect_aid{"950118250"} = 1;	# ¿ÍÌ¾°ìÍ÷
-$neglect_aid{"950118252"} = 1;	# ¿ÍÌ¾°ìÍ÷
-$neglect_aid{"950118253"} = 1;	# ¿ÍÌ¾°ìÍ÷
-$neglect_aid{"950118254"} = 1;	# ¿ÍÌ¾°ìÍ÷
+$neglect_aid{"950101140"} = 1;	# é¸æ‰‹ç´¹ä»‹ # Players introduction
+$neglect_aid{"950110251"} = 1;	# å„åœ°ã®åœ°éœ‡å¼·åº¦ # Earthquake intensity in each area
+$neglect_aid{"950112293"} = 1;	# å‡ºå“è€…ä¸€è¦§ # Seller list
+$neglect_aid{"950118034"} = 1;	# äººåä¸€è¦§ # Person name list
+$neglect_aid{"950118035"} = 1;	# äººåä¸€è¦§
+$neglect_aid{"950118045"} = 1;	# äººåä¸€è¦§
+$neglect_aid{"950118046"} = 1;	# äººåä¸€è¦§
+$neglect_aid{"950118240"} = 1;	# äººåä¸€è¦§
+$neglect_aid{"950118241"} = 1;	# äººåä¸€è¦§
+$neglect_aid{"950118243"} = 1;	# äººåä¸€è¦§
+$neglect_aid{"950118244"} = 1;	# äººåä¸€è¦§
+$neglect_aid{"950118245"} = 1;	# äººåä¸€è¦§
+$neglect_aid{"950118250"} = 1;	# äººåä¸€è¦§
+$neglect_aid{"950118252"} = 1;	# äººåä¸€è¦§
+$neglect_aid{"950118253"} = 1;	# äººåä¸€è¦§
+$neglect_aid{"950118254"} = 1;	# äººåä¸€è¦§
 
 my ($dirname) = ($0 =~ /^(.*?)[^\/]+$/);
 $GIVEUP = $dirname ? "${dirname}giveup.dat" : "giveup.dat";
 $OK = $dirname ? "${dirname}ok.dat" : "ok.dat";
 
-@enu = ("£°", "£±", "£²", "£³", "£´", "£µ", "£¶", "£·", "£¸", "£¹");
+@enu = ("ï¼", "ï¼‘", "ï¼’", "ï¼“", "ï¼”", "ï¼•", "ï¼–", "ï¼—", "ï¼˜", "ï¼™");
 $start_flag = 0;
 
-# °ú¿ô¤Î½èÍı
+# å¼•æ•°ã®å‡¦ç†
+# Processing arguments
 
 $DATE = "";
 for ($i = 0; ; $i++) {
     if ($ARGV[$i] =~ /^\-/) {
 	if ($ARGV[$i] eq "-all") {
-	    $SUBJECT = "Á´µ­»ö";
+	    $SUBJECT = "å…¨è¨˜äº‹";  # All articles
 	} elsif ($ARGV[$i] eq "-ed") {
-	    $SUBJECT = "¼ÒÀâ";
+	    $SUBJECT = "ç¤¾èª¬";  # editorial
 	} elsif ($ARGV[$i] eq "-exed") {
-	    $SUBJECT = "¼ÒÀâ°Ê³°";
+	    $SUBJECT = "ç¤¾èª¬ä»¥å¤–";  # Other than editorials
 	}
     } else {
 	$DATE = $ARGV[$i];
@@ -55,11 +58,13 @@ for ($i = 0; ; $i++) {
 die if (!$DATE || $DATE !~ /^95/); 
 
 ######################################################################
-#		  ËèÆü¿·Ê¹CD-ROM¥Ç¡¼¥¿¤Î¥Õ¥©¡¼¥Ş¥Ã¥È
+#		  æ¯æ—¥æ–°èCD-ROMãƒ‡ãƒ¼ã‚¿ã®ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ
+#             Mainichi Newspaper CD-ROM data format
 ######################################################################
 
 #
-# giveup.dat ¤¬¤¢¤ì¤ĞÆÉ¤ß¹ş¤ß¡¤ºï½ü¤¹¤ë¡¥
+# giveup.dat ãŒã‚ã‚Œã°èª­ã¿è¾¼ã¿ï¼Œå‰Šé™¤ã™ã‚‹ï¼
+# giveup.dat   If there is, read and delete it.
 #
 
 if (open(GIVEUP, $GIVEUP)) {
@@ -72,7 +77,8 @@ if (open(GIVEUP, $GIVEUP)) {
 }
 
 #
-# ok.dat ¤¬¤¢¤ì¤ĞÆÉ¤ß¹ş¤ß¡¤ºï½ü¤¹¤ë¡¥
+# ok.dat ãŒã‚ã‚Œã°èª­ã¿è¾¼ã¿ï¼Œå‰Šé™¤ã™ã‚‹ï¼
+# ok.dat  If there is, read and delete it.
 #
 
 if (open(OK, $OK)) {
@@ -80,7 +86,7 @@ if (open(OK, $OK)) {
 	if (/^(?:\# S-ID:)?([\d-]+)(.*)/) {
 	    my ($id, $str) = ($1, $2);
 	    $ok_h_sid{$id} = 1;
-	    while ($str =~ / ÉôÊ¬ºï½ü:(\d+):([^ ]+)/g) {
+	    while ($str =~ / éƒ¨åˆ†å‰Šé™¤:(\d+):([^ ]+)/g) {  # Delete part
 		$ok_h_check{$id}{$1} = $2;
 	    }
 	}
@@ -95,7 +101,9 @@ while ( <STDIN> ) {
     if (/<\/ENTRY>/) {
 	if ($start_flag) {
 	    &check_article($aid, $title, $article);
-	    # µ­»ö¤Ë¶èÀÚ¤ë¤À¤±
+	    # è¨˜äº‹ã«åŒºåˆ‡ã‚‹ã ã‘
+	    # Just separate articles
+	    
 	    # print "$aid\n$title\n$article\n\n";
 	    # print $whole_article;
 	}
@@ -126,24 +134,43 @@ while ( <STDIN> ) {
 }
 
 ######################################################################
-# ¥³¡¼¥Ñ¥¹ºîÀ®¤«¤éÇÓ½ü¤¹¤ëµ­»ö
+# ã‚³ãƒ¼ãƒ‘ã‚¹ä½œæˆã‹ã‚‰æ’é™¤ã™ã‚‹è¨˜äº‹
 #
-# ¡¦¥¿¥¤¥È¥ë¤Ë¼¡¤ÎÊ¸»úÎó¤¬¤¢¤ë¤â¤Î
-#	¡ÎÍ¾Ï¿¡Ï
-#	¡Î»¨µ­Ä¢¡Ï
-#	¡Î¼Ò¹ğ¡Ï
-#	¡Î¿Í»ö¡Ï
-#	¡Î¿ÍÊªÎ¬Îò¡Ï
-#	»àµî¡á
+# ãƒ»ã‚¿ã‚¤ãƒˆãƒ«ã«æ¬¡ã®æ–‡å­—åˆ—ãŒã‚ã‚‹ã‚‚ã®
+#	ï¼»ä½™éŒ²ï¼½
+#	ï¼»é›‘è¨˜å¸³ï¼½
+#	ï¼»ç¤¾å‘Šï¼½
+#	ï¼»äººäº‹ï¼½
+#	ï¼»äººç‰©ç•¥æ­´ï¼½
+#	æ­»å»ï¼
 #
-# ¡¦ËÜÊ¸Ãæ¤Ë(ÃÊÍîÀèÆ¬¤ò½ü¤¤¤Æ)¥¹¥Ú¡¼¥¹¤ò´Ş¤à¤â¤Î
-#   (¥¹¥Ú¡¼¥¹¤Î2¤ÄÏ¢Â³¤ò½ü¤±¤ĞÉ½¤Ê¤É¤Ï¤Û¤È¤ó¤É¾Ê¤±¤ë¤¬¡¤¤È¤ê¤¢¤¨¤º´ÊÃ±¤Î
-#    ¤¿¤á¥¹¥Ú¡¼¥¹¤¬°ì¤Ä¤Ç¤âÆş¤ì¤ĞÇÓ½ü¤¹¤ë)
+# ãƒ»æœ¬æ–‡ä¸­ã«(æ®µè½å…ˆé ­ã‚’é™¤ã„ã¦)ã‚¹ãƒšãƒ¼ã‚¹ã‚’å«ã‚€ã‚‚ã®
+#   (ã‚¹ãƒšãƒ¼ã‚¹ã®2ã¤é€£ç¶šã‚’é™¤ã‘ã°è¡¨ãªã©ã¯ã»ã¨ã‚“ã©çœã‘ã‚‹ãŒï¼Œã¨ã‚Šã‚ãˆãšç°¡å˜ã®
+#    ãŸã‚ã‚¹ãƒšãƒ¼ã‚¹ãŒä¸€ã¤ã§ã‚‚å…¥ã‚Œã°æ’é™¤ã™ã‚‹)
 #
-# ¡¦ÃÊÍîÀèÆ¬¤Ë"¡¡¡½¡½"¤¬¤¢¤ë¤â¤Î
-#   (¥¤¥ó¥¿¥Ó¥å¡¼µ­»ö¡¤È¯¸À¼ÔÌ¾¡¤È¯¸ÀÁ´ÂÎ¤¬³ç¸Ì¤Ë°Ï¤Ş¤ì¤ë²ÄÇ½À­¤Ê¤É¤¬¤¢¤ë
-#    ¤¿¤á)
+# ãƒ»æ®µè½å…ˆé ­ã«"ã€€â€•â€•"ãŒã‚ã‚‹ã‚‚ã®
+#   (ã‚¤ãƒ³ã‚¿ãƒ“ãƒ¥ãƒ¼è¨˜äº‹ï¼Œç™ºè¨€è€…åï¼Œç™ºè¨€å…¨ä½“ãŒæ‹¬å¼§ã«å›²ã¾ã‚Œã‚‹å¯èƒ½æ€§ãªã©ãŒã‚ã‚‹
+#    ãŸã‚)
 #
+
+# Articles to exclude from corpus creation
+#
+# Â· The following character string is in the title
+# 	[Overhead]
+#	[notebook]
+# 	[Company notice]
+#	[human resources]
+# 	[People Biography]
+# 	Death =
+#
+# Â· Containing spaces (except paragraph head) in the text
+# (Although it is possible to omit tables etc. except for two consecutive spaces, for the time being simple
+# Because it eliminates if even one space is excluded)
+#
+# Â· With "-" at beginning of paragraph
+# (There is a possibility that the interview article, the name of the speaker, the entire remark is enclosed in parentheses
+# For)
+
 ######################################################################
 
 sub check_article
@@ -157,32 +184,32 @@ sub check_article
 	$flag = 0;
     }
     elsif ($title =~ 
-	/¡ÎÍ¾Ï¿¡Ï|¡Î»¨µ­Ä¢¡Ï|¡Î¼Ò¹ğ¡Ï|¡Î¿Í»ö¡Ï|¡Î¿ÍÊªÎ¬Îò¡Ï|»àµî¡á|¡á¤ÎÁòµ·¡¦¹ğÊÌ¼°/) {
+	/ï¼»ä½™éŒ²ï¼½|ï¼»é›‘è¨˜å¸³ï¼½|ï¼»ç¤¾å‘Šï¼½|ï¼»äººäº‹ï¼½|ï¼»äººç‰©ç•¥æ­´ï¼½|æ­»å»ï¼|ï¼ã®è‘¬å„€ãƒ»å‘Šåˆ¥å¼/) {  # ...... =|= funeral ceremony of death
 	$flag = 0;
     }
-    elsif (($SUBJECT eq "¼ÒÀâ" && $title !~ /¡Î¼ÒÀâ¡Ï/) || 
-	   ($SUBJECT eq "¼ÒÀâ°Ê³°" && $title =~ /¡Î¼ÒÀâ¡Ï/)) {
+    elsif (($SUBJECT eq "ç¤¾èª¬" && $title !~ /ï¼»ç¤¾èª¬ï¼½/) || 
+	   ($SUBJECT eq "ç¤¾èª¬ä»¥å¤–" && $title =~ /ï¼»ç¤¾èª¬ï¼½/)) {
 	$flag = 0;
     }
     else {
 	foreach $i (split(/\n/, $article)) {
-	    $flag = 0 if ($i =~ /¡¡¡½¡½/);
-	    $i =~ s/^¡¡//;
-	    $flag = 0 if ($i =~ /¡¡/);
+	    $flag = 0 if ($i =~ /ã€€â€•â€•/);
+	    $i =~ s/^ã€€//;
+	    $flag = 0 if ($i =~ /ã€€/);
 	}
     }
 
     if ($flag == 0) {
-	if ($TYPE eq "·ÁÂÖÁÇ¡¦¹½Ê¸¥³¡¼¥Ñ¥¹") {
-	    print STDOUT "# A-ID:$aid ºï½ü\n";
+	if ($TYPE eq "å½¢æ…‹ç´ ãƒ»æ§‹æ–‡ã‚³ãƒ¼ãƒ‘ã‚¹") {
+	    print STDOUT "# A-ID:$aid å‰Šé™¤\n";
 	}
     }
     else {
-	if ($TYPE eq "·ÁÂÖÁÇ¡¦¹½Ê¸¥³¡¼¥Ñ¥¹") {
+	if ($TYPE eq "å½¢æ…‹ç´ ãƒ»æ§‹æ–‡ã‚³ãƒ¼ãƒ‘ã‚¹") {
 	    print STDOUT "# A-ID:$aid\n";
 	    &breakdown_article($aid, $article, STDOUT);
 	}
-	elsif ($TYPE eq "Ê¸Ì®¥³¡¼¥Ñ¥¹") {
+	elsif ($TYPE eq "æ–‡è„ˆã‚³ãƒ¼ãƒ‘ã‚¹") {  # Context corpus
 	    $aid =~ /....(.....)/;
 	    open(OUT, "> $1.txt");
 	    &breakdown_article($aid, $article, OUT);
@@ -192,11 +219,17 @@ sub check_article
 }
 
 ######################################################################
-# µ­»ö¤òÊ¸Ã±°Ì¤ËÊ¬²ò
+# è¨˜äº‹ã‚’æ–‡å˜ä½ã«åˆ†è§£
 #
-# ¡¦³ç¸ÌÆâ°Ê³°¤Î"¡£"
+# ãƒ»æ‹¬å¼§å†…ä»¥å¤–ã®"ã€‚"
 #
-# ¡¦"¡Û"
+# ãƒ»"ã€‘"
+
+# Disassemble articles by sentence
+#
+# Â· "." Other than in parentheses
+#
+# ãƒ»"ã€‘"
 ######################################################################
 
 sub breakdown_article
@@ -210,7 +243,7 @@ sub breakdown_article
     $pcount = 1;
     foreach $paragraph (split(/\n/, $article)) {
 
-	if ($TYPE eq "Ê¸Ì®¥³¡¼¥Ñ¥¹") {
+	if ($TYPE eq "æ–‡è„ˆã‚³ãƒ¼ãƒ‘ã‚¹") {
 	    print $OUT "# ($pcount)\n";
 	}
 
@@ -220,27 +253,27 @@ sub breakdown_article
 	@char = split(//, $paragraph);
 
 	for ($i = 0; $i < @char; $i++) {
-	    if ($char[$i] eq "¡Ö" ||
-		$char[$i] eq "¡ã" ||
-		$char[$i] eq "¡Ê") {
+	    if ($char[$i] eq "ã€Œ" ||
+		$char[$i] eq "ï¼œ" ||
+		$char[$i] eq "ï¼ˆ") {
 		$level ++;
-		# print STDERR "nesting ³ç¸Ì:$sentence\n" if ($level == 2);
-	    } elsif ($char[$i] eq "¡×" ||
-		     $char[$i] eq "¡ä" ||
-		     $char[$i] eq "¡Ë") {
+		# print STDERR "nesting æ‹¬å¼§:$sentence\n" if ($level == 2);
+	    } elsif ($char[$i] eq "ã€" ||
+		     $char[$i] eq "ï¼" ||
+		     $char[$i] eq "ï¼‰") {
 		$level --;
-		# print STDERR "invalid ³ç¸Ì¡©:$paragraph\n" if ($level == -1);
+		# print STDERR "invalid æ‹¬å¼§ï¼Ÿ:$paragraph\n" if ($level == -1);
 	    }
 	    $sentence .= $char[$i];
-	    if (($level == 0 && $char[$i] eq "¡£" ) || 
-		($char[$i] eq "¡Û" && $char[$i+1] ne "¡£")) {
+	    if (($level == 0 && $char[$i] eq "ã€‚" ) || 
+		($char[$i] eq "ã€‘" && $char[$i+1] ne "ã€‚")) {
 		$sid = sprintf("%s-%03d", $aid, $scount);
 
-		if ($TYPE eq "·ÁÂÖÁÇ¡¦¹½Ê¸¥³¡¼¥Ñ¥¹") {
+		if ($TYPE eq "å½¢æ…‹ç´ ãƒ»æ§‹æ–‡ã‚³ãƒ¼ãƒ‘ã‚¹") {
 		    &check_sentence($sid, $sentence, $OUT);
 		}
-		elsif ($TYPE eq "Ê¸Ì®¥³¡¼¥Ñ¥¹") {
-		    $sentence =~ s/^¡¡+//;
+		elsif ($TYPE eq "æ–‡è„ˆã‚³ãƒ¼ãƒ‘ã‚¹") {
+		    $sentence =~ s/^ã€€+//;
 		    print $OUT "# $scount\n$sentence\n";
 		}
 		$scount++;
@@ -249,43 +282,59 @@ sub breakdown_article
 	    $last = $char[$i];
 	}
 
-	if ($last ne "¡£" && $last ne "¡Û") {
+	if ($last ne "ã€‚" && $last ne "ã€‘") {
 	    $sid = sprintf("%s-%03d", $aid, $scount);
 	    
-	    if ($TYPE eq "·ÁÂÖÁÇ¡¦¹½Ê¸¥³¡¼¥Ñ¥¹") {
+	    if ($TYPE eq "å½¢æ…‹ç´ ãƒ»æ§‹æ–‡ã‚³ãƒ¼ãƒ‘ã‚¹") {
 		&check_sentence($sid, $sentence, $OUT);
 	    }
-	    elsif ($TYPE eq "Ê¸Ì®¥³¡¼¥Ñ¥¹") {
-		$sentence =~ s/^¡¡+//;
+	    elsif ($TYPE eq "æ–‡è„ˆã‚³ãƒ¼ãƒ‘ã‚¹") {
+		$sentence =~ s/^ã€€+//;
 		print $OUT "# $scount\n$sentence\n";
 	    }
 	    $scount++;
 	    $sentence = "";
 	}
 
-	if ($TYPE eq "·ÁÂÖÁÇ¡¦¹½Ê¸¥³¡¼¥Ñ¥¹") {
-	    print $OUT "# ²şÃÊÍî\n";
+	if ($TYPE eq "å½¢æ…‹ç´ ãƒ»æ§‹æ–‡ã‚³ãƒ¼ãƒ‘ã‚¹") {
+	    print $OUT "# æ”¹æ®µè½\n";  # Change paragraph
 	}
 	$pcount++;
     }
 }
 
 ######################################################################
-# Ê¸¡¤Ê¸Æâ¤Çºï½ü¤¹¤ë¤â¤Î
+# æ–‡ï¼Œæ–‡å†…ã§å‰Šé™¤ã™ã‚‹ã‚‚ã®
 #
-# ¡¦"¡Ú"¡¤"¡ş"¡¤"¢¦"¡¤"¡ü"¡¤"¡ã"¡¤"¡Ô"¤Ç»Ï¤Ş¤ëÊ¸¤ÏÁ´ÂÎ¤òºï½ü
+# ãƒ»"ã€"ï¼Œ"â—‡"ï¼Œ"â–½"ï¼Œ"â—"ï¼Œ"ï¼œ"ï¼Œ"ã€Š"ã§å§‹ã¾ã‚‹æ–‡ã¯å…¨ä½“ã‚’å‰Šé™¤
 #
-# ¡¦"¡£"¤¬ÆâÉô¤Ë5²ó°Ê¾å¤Ş¤¿¤ÏÄ¹¤µ512¥Ğ¥¤¥È°Ê¾å(Â¿¤¯¤Ï°úÍÑÊ¸)¤ÏÁ´ÂÎ¤òºï½ü
+# ãƒ»"ã€‚"ãŒå†…éƒ¨ã«5å›ä»¥ä¸Šã¾ãŸã¯é•·ã•512ãƒã‚¤ãƒˆä»¥ä¸Š(å¤šãã¯å¼•ç”¨æ–‡)ã¯å…¨ä½“ã‚’å‰Šé™¤
 #
-# ¡¦Ê¸Æ¬¤Î"¡¡"¡¤"¡¡¡½¡½";
+# ãƒ»æ–‡é ­ã®"ã€€"ï¼Œ"ã€€â€•â€•";
 #
-# ¡¦"¡Ê¡Ä¡Ë"¤Îºï½ü¡¤¤¿¤À¤·¡¤"¡Ê£±¡Ë"¡¤"¡Ê£²¡Ë"¤Î¾ì¹ç¤Ï»Ä¤¹
+# ãƒ»"ï¼ˆâ€¦ï¼‰"ã®å‰Šé™¤ï¼ŒãŸã ã—ï¼Œ"ï¼ˆï¼‘ï¼‰"ï¼Œ"ï¼ˆï¼’ï¼‰"ã®å ´åˆã¯æ®‹ã™
 #
-# ¡¦"¡á¡Ä¡á"¤Îºï½ü¡¤¤¿¤À¤·´Ö¤Ë"¡¤"¤¬¤¯¤ì¤ĞRESET
+# ãƒ»"ï¼â€¦ï¼"ã®å‰Šé™¤ï¼ŒãŸã ã—é–“ã«"ï¼Œ"ãŒãã‚Œã°RESET
 #
-# ¡¦"¡á¡Ä(Ê¸Ëö)"¤Ç¡¤Ê¸Ëö¤Ë"¡£"¤¬¤Ê¤¤¤«¡¤"¡Ä"¤¬"¼Ì¿¿¡£"¤Ç¤¢¤ì¤Ğ½üºï
+# ãƒ»"ï¼â€¦(æ–‡æœ«)"ã§ï¼Œæ–‡æœ«ã«"ã€‚"ãŒãªã„ã‹ï¼Œ"â€¦"ãŒ"å†™çœŸã€‚"ã§ã‚ã‚Œã°é™¤å‰Š
 #
-# ¡¦¡Ê£±¡Ë¡Ä¡Ê£²¡Ë ¤È¤¤¤¦²Õ¾ò½ñ¤­¤¬¤¢¤ë¤â¤Î
+# ãƒ»ï¼ˆï¼‘ï¼‰â€¦ï¼ˆï¼’ï¼‰ ã¨ã„ã†ç®‡æ¡æ›¸ããŒã‚ã‚‹ã‚‚ã®
+
+# Statements, things to delete in statements
+#
+# Â· Statements beginning with "[", "â—‡", "â–½", "â—", "<", "<<"delete the whole
+#
+#. "." Inside it more than 5 times or longer 512 bytes or more (many quotes) delete the whole
+#
+# Â· At the beginning of the sentence "", "-";
+#
+# Â· Delete "(...)", except for "(1)", "(2)"
+#
+# Â· Deleting "= ... =", but if "," comes between, RESET
+#
+# Â· "= ... (end of sentence)", if there is no "." At the end of the sentence or "..." is "photo", remove it
+#
+# Â· With (1) ... (2) bullet point
 ######################################################################
 
 sub check_sentence
@@ -300,7 +349,7 @@ sub check_sentence
 	$check_array[$i] = 1;
     }
 
-    # ¿Í¼êºï½ü
+    # äººæ‰‹å‰Šé™¤
     if ($ok_h_sid{$sid}) {
 	for my $pos (keys %{$ok_h_check{$sid}}) {
 	    for (my $i = $pos; $i < $pos + length($ok_h_check{$sid}{$pos}); $i++) {
@@ -310,62 +359,69 @@ sub check_sentence
 	goto SENTENCE_CHECK_OK;
     }
 
-    # ÆÃÊÌ¤ËÂĞ¾İ³°¤È¤¹¤ëÊ¸
+    # ç‰¹åˆ¥ã«å¯¾è±¡å¤–ã¨ã™ã‚‹æ–‡
+    # A statement to be excluded specially
 
     if ($neglect_sid{$sid}) {
-	print $OUT "# S-ID:$sid Á´ÂÎºï½ü:$sentence\n";
+	print $OUT "# S-ID:$sid å…¨ä½“å‰Šé™¤:$sentence\n";
 	return;
     }
     if ($neglect_h_sid{$sid}) {
-	print $OUT "# S-ID:$sid ¿Í¼êºï½ü:$sentence\n";
+	print $OUT "# S-ID:$sid äººæ‰‹å‰Šé™¤:$sentence\n";
 	return;
     }
 
-    # "¡Ú"¡¤"¡ş"¡¤"¢¦"¡¤"¡ü"¡¤"¡ã"¡¤"¡Ô"¤Ç»Ï¤Ş¤ëÊ¸¤ÏÁ´ÂÎ¤òºï½ü
+    # "ã€"ï¼Œ"â—‡"ï¼Œ"â–½"ï¼Œ"â—"ï¼Œ"ï¼œ"ï¼Œ"ã€Š"ã§å§‹ã¾ã‚‹æ–‡ã¯å…¨ä½“ã‚’å‰Šé™¤
+    # Statements beginning with "[", "â—‡", "â–½", "â—", "<", "<<" delete the whole
 
-    if ($sentence =~ /^(¡¡)?(¡Ú|¡ş|¢¦|¡ü|¡ã|¡Ô)/) {
-	print $OUT "# S-ID:$sid Á´ÂÎºï½ü:$sentence\n";
+    if ($sentence =~ /^(ã€€)?(ã€|â—‡|â–½|â—|ï¼œ|ã€Š)/) {
+	print $OUT "# S-ID:$sid å…¨ä½“å‰Šé™¤:$sentence\n";
 	return;
     }
 
-    # "¡£"¤¬ÆâÉô¤Ë5²ó°Ê¾å¤Ş¤¿¤ÏÄ¹¤µ512¥Ğ¥¤¥È°Ê¾å(Â¿¤¯¤Ï°úÍÑÊ¸)¤ÏÁ´ÂÎ¤òºï½ü
+    # "ã€‚"ãŒå†…éƒ¨ã«5å›ä»¥ä¸Šã¾ãŸã¯é•·ã•512ãƒã‚¤ãƒˆä»¥ä¸Š(å¤šãã¯å¼•ç”¨æ–‡)ã¯å…¨ä½“ã‚’å‰Šé™¤
+    # "." Inside more than 5 times or more than 512 bytes long (many quotes) delete the whole
 
-    if ($sentence =~ /^.+¡£.+¡£.+¡£.+¡£.+¡£.+/ ||
+    if ($sentence =~ /^.+ã€‚.+ã€‚.+ã€‚.+ã€‚.+ã€‚.+/ ||
 	length($sentence) >= 256) {
-	print $OUT "# S-ID:$sid Á´ÂÎºï½ü:$sentence\n";
+	print $OUT "# S-ID:$sid å…¨ä½“å‰Šé™¤:$sentence\n";
 	return;
     }
 
-    # "¡Ä¡Ä¡Ä"¤À¤±¤ÎÊ¸¤ÏÁ´ÂÎ¤òºï½ü
+    # "â€¦â€¦â€¦"ã ã‘ã®æ–‡ã¯å…¨ä½“ã‚’å‰Šé™¤
+    # Delete the whole sentence "........." only
     
-    if ($sentence =~ /^(¡Ä)+$/) {
-	print $OUT "# S-ID:$sid Á´ÂÎºï½ü:$sentence\n";
+    if ($sentence =~ /^(â€¦)+$/) {
+	print $OUT "# S-ID:$sid å…¨ä½“å‰Šé™¤:$sentence\n";
 	return;
     }
 
   SENTENCE_OK:
-    # Ê¸Æ¬¤Î"¡¡"¤Ïºï½ü
-    $check_array[0] = 0 if ($char_array[0] eq "¡¡");
+    # æ–‡é ­ã®"ã€€"ã¯å‰Šé™¤
+    # Delete "" at the beginning of the sentence
+    $check_array[0] = 0 if ($char_array[0] eq "ã€€");
 
-    # Ê¸Æ¬¤Î"¡¡¡½¡½"¤Ïºï½ü
+    # æ–‡é ­ã®"ã€€â€•â€•"ã¯å‰Šé™¤
+    # Delete "-" at beginning of sentence
 
-    if ($sentence =~ "^¡¡¡½¡½") {
+    if ($sentence =~ "^ã€€â€•â€•") {
 	$check_array[1] = 0;
 	$check_array[2] = 0;
     }
 
-    # "¡Ê¡Ä¡Ë"¤Îºï½ü¡¤¤¿¤À¤·¡¤"¡Ê£±¡Ë"¡¤"¡Ê£²¡Ë"¤Î¾ì¹ç¤Ï»Ä¤¹
+    # "ï¼ˆâ€¦ï¼‰"ã®å‰Šé™¤ï¼ŒãŸã ã—ï¼Œ"ï¼ˆï¼‘ï¼‰"ï¼Œ"ï¼ˆï¼’ï¼‰"ã®å ´åˆã¯æ®‹ã™
+    # Delete "(...)", but leave it if "(1)", "(2)"
 
     $enu_num = 1;
     $paren_start = -1;
     $paren_level = 0;
     $paren_str = "";
     for ($i = 0; $i < @char_array; $i++) {
-	if ($char_array[$i] eq "¡Ê") {
+	if ($char_array[$i] eq "ï¼ˆ") {
 	    $paren_start = $i if ($paren_level == 0);
 	    $paren_level++;
 	} 
-	elsif ($char_array[$i] eq "¡Ë") {
+	elsif ($char_array[$i] eq "ï¼‰") {
 	    $paren_level--;
 	    if ($paren_level == 0) {
 		if ($paren_str eq $enu[$enu_num]) {
@@ -386,15 +442,17 @@ sub check_sentence
     }
     # print STDERR "enu_num(+1) = $enu_num\n" if ($enu_num > 1);
 
-    # "¡á¡Ä¡á"¤Îºï½ü¡¤¤¿¤À¤·´Ö¤Ë"¡¤"¤¬¤¯¤ì¤ĞRESET
+    # "ï¼â€¦ï¼"ã®å‰Šé™¤ï¼ŒãŸã ã—é–“ã«"ï¼Œ"ãŒãã‚Œã°RESET
+    # Delete "= ... =", but if "," comes between, RESET
 
     $paren_start = -1;
     $paren_level = 0;
     $paren_str = "";
     for ($i = 0; $i < @char_array; $i++) {
 	if ($check_array[$j] == 0) {
-	    ; # "¡Ê¡Ä¡Ë"¤ÎÃæ¤Ï¥¹¥­¥Ã¥×
-	} elsif ($char_array[$i] eq "¡á") {
+	    ; # "ï¼ˆâ€¦ï¼‰"ã®ä¸­ã¯ã‚¹ã‚­ãƒƒãƒ—
+	      # Skip inside "(...)"
+	} elsif ($char_array[$i] eq "ï¼") {
 	    if ($paren_level == 0) {
 		$paren_start = $i; 
 		$paren_level++;
@@ -408,12 +466,16 @@ sub check_sentence
 		$paren_str = "";
 	    }
 	}
-	elsif ($char_array[$i] eq "¡¢") {
+	elsif ($char_array[$i] eq "ã€") {
 	    if ($paren_level == 1) {
 
-		# "¡á¡Ä"¤È¤Ê¤Ã¤Æ¤¤¤Æ¤â¡¤"¡¢"¤¬¤¯¤ì¤ĞRESET
-		# Îã "¡ÖÃæ¹âÇ¯¤ÎÀ±¡×¡áÊÆÄ¹¤È¡¢¼ã¤­Å·ºÍ¡á±©À¸"
-		# print STDERR "¡á¡Ä¡¤¡Ä¡áRESET:$paren_str:$sentence\n";
+		# "ï¼â€¦"ã¨ãªã£ã¦ã„ã¦ã‚‚ï¼Œ"ã€"ãŒãã‚Œã°RESET
+		# ä¾‹ "ã€Œä¸­é«˜å¹´ã®æ˜Ÿã€ï¼ç±³é•·ã¨ã€è‹¥ãå¤©æ‰ï¼ç¾½ç”Ÿ"
+		
+		# "= ...", but if "," comes, RESET
+		# Example "ã€Œä¸­é«˜å¹´ã®æ˜Ÿã€ï¼ç±³é•·ã¨ã€è‹¥ãå¤©æ‰ï¼ç¾½ç”Ÿ"
+		
+		# print STDERR "ï¼â€¦ï¼Œâ€¦ï¼RESET:$paren_str:$sentence\n";
 
 		$paren_start = -1;
 		$paren_level = 0;
@@ -425,16 +487,17 @@ sub check_sentence
 	}
     }
 
-    # "¡á¡Ä(Ê¸Ëö)"¤Ç¡¤Ê¸Ëö¤Ë"¡£"¤¬¤Ê¤¤¤«¡¤"¡Ä"¤¬"¼Ì¿¿¡£"¤Ç¤¢¤ì¤Ğ½üºï
+    # "ï¼â€¦(æ–‡æœ«)"ã§ï¼Œæ–‡æœ«ã«"ã€‚"ãŒãªã„ã‹ï¼Œ"â€¦"ãŒ"å†™çœŸã€‚"ã§ã‚ã‚Œã°é™¤å‰Š
+    # "= ... (end of sentence)", if there is no "." At the end of the sentence or "..." is "photo", remove it
 
     if ($paren_level == 1) {
-	if ($paren_str =~ /^¼Ì¿¿/ || $paren_str !~ /¡£$/) {
+	if ($paren_str =~ /^å†™çœŸ/ || $paren_str !~ /ã€‚$/) {
 	    for ($j = $paren_start; $j < $i; $j++) {
 		$check_array[$j] = 0;
 	    }
-	    # print STDERR "¡á¡ÄDELETE:$paren_str:$sentence\n";
+	    # print STDERR "ï¼â€¦DELETE:$paren_str:$sentence\n";
 	} else {
-	    # print STDERR "¡á¡ÄKEEP:$paren_str:$sentence\n";
+	    # print STDERR "ï¼â€¦KEEP:$paren_str:$sentence\n";
 	}
     }
 
@@ -444,21 +507,23 @@ sub check_sentence
 	if ($check_array[$i] == 1) {
 	    $flag = 1;
 	    last;
-	}			# Í­¸úÉôÊ¬¤¬¤Ê¤±¤ì¤ĞÁ´ÂÎºï½ü
+	}			# æœ‰åŠ¹éƒ¨åˆ†ãŒãªã‘ã‚Œã°å…¨ä½“å‰Šé™¤
+	                        # If there is no valid part, delete whole
     }
-    if ($enu_num > 2 && !$ok_h_sid{$sid}) {	# ¡Ê£±¡Ë¡Ê£²¡Ë¤È¤¢¤ì¤ĞÁ´ÂÎºï½ü
-	# print STDERR "# S-ID:$sid Á´ÂÎºï½ü:$sentence\n";
+    if ($enu_num > 2 && !$ok_h_sid{$sid}) {	# ï¼ˆï¼‘ï¼‰ï¼ˆï¼’ï¼‰ã¨ã‚ã‚Œã°å…¨ä½“å‰Šé™¤
+    						# If (1) (2) is present, the whole is deleted
+	# print STDERR "# S-ID:$sid å…¨ä½“å‰Šé™¤:$sentence\n";
 	$flag = 0;
     }
 
     if ($flag == 0) {
-	print $OUT "# S-ID:$sid Á´ÂÎºï½ü:$sentence\n";
+	print $OUT "# S-ID:$sid å…¨ä½“å‰Šé™¤:$sentence\n";
     } else {
 	print $OUT "# S-ID:$sid";
 
 	for ($i = 0; $i < @char_array; $i++) {
 	    if ($check_array[$i] == 0) {
-		print $OUT " ÉôÊ¬ºï½ü:$i:" 
+		print $OUT " éƒ¨åˆ†å‰Šé™¤:$i:" 
 		    if ($i == 0 || $check_array[$i-1] == 1);
 		print $OUT $char_array[$i];
 	    }
