@@ -2,32 +2,35 @@
 
 use encoding 'euc-jp';
 
-# ËèÆü¿·Ê¹¤Ç°ìÆü¤Îµ­»ö¤ÎÃæ¤Ç½ÅÊ£¤·¤Æ¤¤¤ëÊ¸¤òºï½ü
+# æ¯æ—¥æ–°èã§ä¸€æ—¥ã®è¨˜äº‹ã®ä¸­ã§é‡è¤‡ã—ã¦ã„ã‚‹æ–‡ã‚’å‰Šé™¤
+# Delete duplicate sentences in the article of the day in the Mainichi Newspaper
 
 while ( <STDIN> ) {
 
-    if (/^\# S-ID:([\d\-]+) (Á´ÂÎºï½ü|¿Í¼êºï½ü):(.+\n)$/) {
+    if (/^\# S-ID:([\d\-]+) (å…¨ä½“å‰Šé™¤|äººæ‰‹å‰Šé™¤):(.+\n)$/) {  # Delete whole / manually deleted
 	$id = $1;
 	$sentence = $3;
 	$check{$sentence} = $id;
 
 	print;
     }
-    elsif (/^\# S-ID:([\d\-]+)[\n ]/ && !/(Á´ÂÎºï½ü|¿Í¼êºï½ü)/) {
+    elsif (/^\# S-ID:([\d\-]+)[\n ]/ && !/(å…¨ä½“å‰Šé™¤|äººæ‰‹å‰Šé™¤)/) {  # Delete whole / manually deleted
 	$id = $1;
 	$all_id = $_;
 	$sentence = <STDIN>;
 
 	if ($check{$sentence}) {
 
-	    # ½ÅÊ£¤·¤Æ¤¤¤ì¤Ğ¡¤Ê¸¤ÏID¹Ô¤Ë½ĞÎÏ¤¹¤ë
+	    # é‡è¤‡ã—ã¦ã„ã‚Œã°ï¼Œæ–‡ã¯IDè¡Œã«å‡ºåŠ›ã™ã‚‹
+	    # If there is duplication, the statement is outputted to the ID row
 
 	    chop($all_id);
-	    print "$all_id ½ÅÊ£:$check{$sentence}$sentence";
+	    print "$all_id é‡è¤‡:$check{$sentence}$sentence";
 	}
 	else {
 
-	    # ½ÅÊ£¤·¤Æ¤¤¤Ê¤±¤ì¤ĞÄÌ¾ï½ĞÎÏ¡¤¥Æ¡¼¥Ö¥ëÄÉ²Ã
+	    # é‡è¤‡ã—ã¦ã„ãªã‘ã‚Œã°é€šå¸¸å‡ºåŠ›ï¼Œãƒ†ãƒ¼ãƒ–ãƒ«è¿½åŠ 
+	    # If it does not overlap, normal output, add table
 
 	    print $all_id;
 	    print $sentence;
