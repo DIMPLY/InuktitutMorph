@@ -1,10 +1,21 @@
 
-trans.pl    : ËèÆü¿·Ê¹CD-ROM¤ÎSGMLÉ÷¥¿¥°ÉÕ¤±
-mainichi.pl : <AB>,<KB>,<AA>,<KA>,<S2>¤òºï½ü¡¤·îÃ±°Ì¤Ë¥Õ¥¡¥¤¥ëÊ¬³ä
-format.pl   : ËèÆü¿·Ê¹¤Î°ìÆüÊ¬¤ËÂĞ¤·¤Æ¥³¡¼¥Ñ¥¹ºîÀ®ÍÑ´ğÁÃ¥Ç¡¼¥¿¤òºîÀ®
-dupli.pl    : ËèÆü¿·Ê¹¤Î°ìÆüÊ¬¤ÎÃæ¤Ç½ÅÊ£¤¹¤ëÊ¸¤ò¼è¤ê½ü¤¯
-num2KNP.pl  : ÇÛÉÛ¥Ç¡¼¥¿¤ò¥³¡¼¥Ñ¥¹ËÜÍè¤Î¥Ç¡¼¥¿·Á¼°¤ËÊÑ´¹
+trans.pl    : æ¯æ—¥æ–°èCD-ROMã®SGMLé¢¨ã‚¿ã‚°ä»˜ã‘
+mainichi.pl : <AB>,<KB>,<AA>,<KA>,<S2>ã‚’å‰Šé™¤ï¼Œæœˆå˜ä½ã«ãƒ•ã‚¡ã‚¤ãƒ«åˆ†å‰²
+format.pl   : æ¯æ—¥æ–°èã®ä¸€æ—¥åˆ†ã«å¯¾ã—ã¦ã‚³ãƒ¼ãƒ‘ã‚¹ä½œæˆç”¨åŸºç¤ãƒ‡ãƒ¼ã‚¿ã‚’ä½œæˆ
+dupli.pl    : æ¯æ—¥æ–°èã®ä¸€æ—¥åˆ†ã®ä¸­ã§é‡è¤‡ã™ã‚‹æ–‡ã‚’å–ã‚Šé™¤ã
+num2KNP.pl  : é…å¸ƒãƒ‡ãƒ¼ã‚¿ã‚’ã‚³ãƒ¼ãƒ‘ã‚¹æœ¬æ¥ã®ãƒ‡ãƒ¼ã‚¿å½¢å¼ã«å¤‰æ›
 
-giveup.dat  : ËèÆü¿·Ê¹¤Îµ­»ö¤ÎÃæ¤Ç¥³¡¼¥Ñ¥¹¤È¤·¤ÆÅ¬Åö¤Ç¤Ê¤¤Ê¸¤Î°ìÍ÷
-ok.dat      : µşÅÔÂç³Ø¥Æ¥­¥¹¥È¥³¡¼¥Ñ¥¹ Version 3.0¤Ë¤Ï´Ş¤Ş¤ì¤Æ¤¤¤Ê¤¤¤¬¡¢ËÜ¥³¡¼¥Ñ¥¹¤Ë´Ş¤á¤ë¤³¤È¤Ë¤·¤¿Ê¸¤Î°ìÍ÷
-rel.dat     : ³Æ¼ï´Ø·¸¥¿¥°ÉÕ¤­¥³¡¼¥Ñ¥¹¤Ë´Ş¤Ş¤ì¤ëµ­»öID¤Î°ìÍ÷
+giveup.dat  : æ¯æ—¥æ–°èã®è¨˜äº‹ã®ä¸­ã§ã‚³ãƒ¼ãƒ‘ã‚¹ã¨ã—ã¦é©å½“ã§ãªã„æ–‡ã®ä¸€è¦§
+ok.dat      : äº¬éƒ½å¤§å­¦ãƒ†ã‚­ã‚¹ãƒˆã‚³ãƒ¼ãƒ‘ã‚¹ Version 3.0ã«ã¯å«ã¾ã‚Œã¦ã„ãªã„ãŒã€æœ¬ã‚³ãƒ¼ãƒ‘ã‚¹ã«å«ã‚ã‚‹ã“ã¨ã«ã—ãŸæ–‡ã®ä¸€è¦§
+rel.dat     : å„ç¨®é–¢ä¿‚ã‚¿ã‚°ä»˜ãã‚³ãƒ¼ãƒ‘ã‚¹ã«å«ã¾ã‚Œã‚‹è¨˜äº‹IDã®ä¸€è¦§
+
+
+trans.pl    : Mainichi Newspaper CD-ROM SGML style tagging
+Mainichi.pl : Delete <AB>, <KB>, <AA>, <KA>, <S2>, split file by month
+format.pl   : Create basic data for corpus creation for Mainichi Newspaper one day
+dupli.pl    : Remove duplicate sentences within a day of Mainichi Newspaper
+num2KNP.pl  : Convert distribution data to corpus's original data format
+
+giveup.dat  : A list of sentences not appropriate as a corpus in Mainichi Shimbun articles
+ok.dat      : List of sentences which are not included in Kyoto University Text Corpus Version 3.0 but are included in this corpus
+rel.dat     : List of article IDs included in corpus with various relation tags
