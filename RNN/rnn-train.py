@@ -6,13 +6,13 @@ import matplotlib.pyplot as plot
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing import sequence
 from keras.models import Sequential
-from keras.layers import Dense, SimpleRNN 
+from keras.layers import Dense, SimpleRNN, Embedding, Bidirectional, LSTM
 
 parser = argparse.ArgumentParser(description='Train unidirectional RNN')
 
-parser.add_argument('--train-file', default='pre2', required=True,
+parser.add_argument('--train-file', default='pre2',
                     help='File with sentence separated training data')
-parser.add_argument('--dev-file', default='pre2', required=True,
+parser.add_argument('--dev-file', default='pre2',
                     help='File with sentence separated development data')
 parser.add_argument('--max-length', default=25, type=int,
                     help='Maximum sequence length in tokens (Default: 25)')
@@ -30,39 +30,51 @@ if __name__ == "__main__":
 
     # Converting training and validation data into sequences
     trainf = codecs.open(args.train_file,'r','utf-8')
-    traintexts = trainf.read().splitlines()
+    trainpairs = [pair.split('\t') for pair in trainf.read().splitlines()]
     devf = codecs.open(args.dev_file,'r','utf-8')
-    devtexts = devf.read().splitlines()
-    corpus = []
-    for traintext in traintexts:
-        corpus.append(seq_start+" "+" ".join(list(traintext.split('\t')[0]))+" "+seq_end)
-    for devtext in devtexts:
-        corpus.append(seq_start+devtext.split('\t')[0]+seq_end)
-    tokenizer = Tokenizer(num_words=args.vocab_size,filters='!"#$%&()*+,-./:;<=>?[\\]^_`{|}~\t\n')
-    tokenizer.fit_on_texts(corpus)
-    #print(tokenizer.word_index)
-    #print(tokenizer.word_counts)
+    devpairs = [pair.split('\t') for pair in devf.read().splitlines()]
+    corpusin = []
+    for trainpair in trainpairs:
+        corpusin.append(seq_start + " " + " ".join(list(trainpair[0])) + " " + seq_end)
+    for devpair in devpairs:
+        corpusin.append(seq_start + " " + " ".join(list(devpair[0])) + " " + seq_end)
+    tokenizer = Tokenizer(num_words=args.vocab_size,filters='!"#%&()*+,-./:;<=>?[\\]_`{|}~\t\n')
+    tokenizer.fit_on_texts(corpusin)
+    print(tokenizer.word_index)
+    print(tokenizer.word_counts)
 
-    train_in = [seq_start+" "+x for x in traintexts]
-    train_out = [x+" "+seq_end for x in traintexts]
+    train_in = [seq_start + " " + " ".join(list(x[0])) + " " + seq_end for x in trainpairs]
+    train_out = [[3] + [int(c)+1 for c in p[1]] + [4] for p in trainpairs] # For output, 1-> 0, 2-> 1, 3-> start, 4-> ent
     train_in_seq = sequence.pad_sequences(tokenizer.texts_to_sequences(train_in),maxlen=max_tokens,padding='post',truncating='post')
-    train_out_seq = sequence.pad_sequences(tokenizer.texts_to_sequences(train_out),maxlen=max_tokens,padding='post',truncating='post')
+    train_out_seq = sequence.pad_sequences(train_out, maxlen=max_tokens,padding='post',truncating='post')
     train_out_seq = np.expand_dims(train_out_seq,-1)
 
-    dev_in = [seq_start+" "+x for x in devtexts]
-    dev_out = [x+" "+seq_end for x in devtexts]
+    print(train_in_seq)
+    print(train_out_seq)
+
+    dev_in = [seq_start + " " + " ".join(list(x[0])) + " " + seq_end for x in devpairs]
+    dev_out = [[3] + [int(c)+1 for c in p[1]] + [4] for p in devpairs]
     dev_in_seq = sequence.pad_sequences(tokenizer.texts_to_sequences(dev_in),maxlen=max_tokens,padding='post',truncating='post')
-    dev_out_seq = sequence.pad_sequences(tokenizer.texts_to_sequences(dev_out),maxlen=max_tokens,padding='post',truncating='post')
+    dev_out_seq = sequence.pad_sequences(dev_out, maxlen=max_tokens,padding='post',truncating='post')
     # https://github.com/keras-team/keras/issues/7303
     dev_out_seq = np.expand_dims(dev_out_seq,-1)
-    vocab_size=len(tokenizer.word_counts)+1
+    vocab_size=len(tokenizer.word_counts)#+1
 
     # Training the model
+    embedding_dim = 32
     rnn_dim = 16
     batch_size = 48
 
     model=Sequential()
     # TBD: Add model definition and compilation here
+    # TBD: Add model definition and compilation here
+    model.add(Embedding(vocab_size, embedding_dim, input_length=max_tokens))
+    model.add(Bidirectional(LSTM(rnn_dim, return_sequences=True),input_shape=(32,)))
+    # model.add(LSTM(rnn_dim, return_sequences=True))
+    # model.add(SimpleRNN(rnn_dim, return_sequences=True))
+    # model.add(SimpleRNN(rnn_dim, return_sequences=True))
+    model.add(Dense(vocab_size, input_shape=(16,), activation='softmax'))
+    model.compile(optimizer='adam',loss='sparse_categorical_crossentropy', metrics=['acc'])
 
     model.summary()
     history = model.fit(train_in_seq,train_out_seq,
