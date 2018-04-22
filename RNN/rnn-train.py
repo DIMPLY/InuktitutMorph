@@ -10,7 +10,7 @@ from keras.layers import Dense, SimpleRNN, Embedding, Bidirectional, LSTM
 
 parser = argparse.ArgumentParser(description='Train unidirectional RNN')
 
-parser.add_argument('--train-file', default='pre2',
+parser.add_argument('--train-file', default='train-pre2',
                     help='File with sentence separated training data')
 parser.add_argument('--dev-file', default='pre2',
                     help='File with sentence separated development data')
@@ -20,6 +20,8 @@ parser.add_argument('--epochs', default=10, type=int,
                     help='Number of training epochs (Default: 10)')
 parser.add_argument('--vocab-size', default=28, type=int,
                     help='Vocabulary size (Default: None)')
+parser.add_argument('--chart',default=False, type=bool,
+                    help="Chart the perplexity over epoches or not")
 
 if __name__ == "__main__":
     # Dashes in argument names get replaced with underscores to create variable names
@@ -57,8 +59,8 @@ if __name__ == "__main__":
     dev_in_seq = sequence.pad_sequences(tokenizer.texts_to_sequences(dev_in),maxlen=max_tokens,padding='post',truncating='post')
     dev_out_seq = sequence.pad_sequences(dev_out, maxlen=max_tokens,padding='post',truncating='post')
     # https://github.com/keras-team/keras/issues/7303
-    dev_out_seq = np.expand_dims(dev_out_seq,-1)
-    vocab_size=len(tokenizer.word_counts)#+1
+    dev_out_seq_fixed = np.expand_dims(dev_out_seq,-1)
+    vocab_size=len(tokenizer.word_counts)+1
 
     # Training the model
     embedding_dim = 32
@@ -73,34 +75,59 @@ if __name__ == "__main__":
     # model.add(LSTM(rnn_dim, return_sequences=True))
     # model.add(SimpleRNN(rnn_dim, return_sequences=True))
     # model.add(SimpleRNN(rnn_dim, return_sequences=True))
-    model.add(Dense(vocab_size, input_shape=(16,), activation='softmax'))
+    model.add(Dense(5, input_shape=(16,), activation='softmax'))
     model.compile(optimizer='adam',loss='sparse_categorical_crossentropy', metrics=['acc'])
 
     model.summary()
     history = model.fit(train_in_seq,train_out_seq,
                         epochs = args.epochs,
                         batch_size = batch_size,
-                        validation_data = (dev_in_seq,dev_out_seq))
+                        validation_data = (dev_in_seq,dev_out_seq_fixed),
+                        validation_split=0.0)
 
     # Charting perplexity over the training epochs
-    loss_values = history.history['loss']
-    val_loss_values = history.history['val_loss']
-    perp = np.exp2(history.history['loss'])
-    val_perp = np.exp2(history.history['val_loss'])
-    epochs = range(1, len(loss_values) + 1)
 
-    plot.plot(epochs, loss_values, 'bo', label='Training loss')
-    plot.plot(epochs, val_loss_values, 'b', label='Validation loss')
-    plot.title('Training and validation loss')
-    plot.xlabel('Epochs')
-    plot.ylabel('Loss')
-    plot.legend()
-    plot.figure()
+    if args.chart:
+        loss_values = history.history['loss']
+        val_loss_values = history.history['val_loss']
+        perp = np.exp2(history.history['loss'])
+        val_perp = np.exp2(history.history['val_loss'])
+        epochs = range(1, len(loss_values) + 1)
 
-    plot.plot(epochs, perp, 'bo', label='Training perplexity')
-    plot.plot(epochs, val_perp, 'b', label='Validation perplexity')
-    plot.title('Training and validation perplexity')
-    plot.xlabel('Epochs')
-    plot.ylabel('Perplexity')
-    plot.legend()
-    plot.show()
+        plot.plot(epochs, loss_values, 'bo', label='Training loss')
+        plot.plot(epochs, val_loss_values, 'b', label='Validation loss')
+        plot.title('Training and validation loss')
+        plot.xlabel('Epochs')
+        plot.ylabel('Loss')
+        plot.legend()
+        plot.figure()
+
+        plot.plot(epochs, perp, 'bo', label='Training perplexity')
+        plot.plot(epochs, val_perp, 'b', label='Validation perplexity')
+        plot.title('Training and validation perplexity')
+        plot.xlabel('Epochs')
+        plot.ylabel('Perplexity')
+        plot.legend()
+        plot.show()
+
+    # predict
+    def map(num):
+        if num==0:
+            return ""
+        elif num==1:
+            return "0"
+        elif num==2:
+            return "1"
+        elif num==3:
+            return "b"
+        elif num==4:
+            return "e"
+
+    predict = model.predict(dev_in_seq, batch_size=batch_size)
+    for pre,gold in zip(predict, dev_out_seq):
+        print(" ".join([map(np.argmax(p_group,axis=0)) for p_group in pre]))
+        print(" ".join([map(label) for label in gold]))
+        print()
+
+    for name, value in zip(model.metrics_names,model.evaluate(dev_in_seq, dev_out_seq_fixed, batch_size=batch_size)):
+        print(name,value)

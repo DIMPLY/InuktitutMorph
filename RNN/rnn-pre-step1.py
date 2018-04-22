@@ -6,7 +6,12 @@ The results are in file "temp-orig", and then manual morphorlogy analysis for th
 The referrences and irregular formats in "temp" are then eliminated and the result stored in "pre".
 """
 
-with open("rnn-dev.labels.ger") as f:
+# python3 xxx.py train
+# python3 xxx.py dev
+
+import sys 
+
+with open("rnn-"+sys.argv[1]+".labels.ger") as f:
     for line in f:
         line = line.strip()
         word, morph = line.split("\t")
