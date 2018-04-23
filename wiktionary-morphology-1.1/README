@@ -1,0 +1,80 @@
+=============================
+Wiktionary Morphology Dataset
+=============================
+
+This directory contains Wiktionary morphology data released to the public as a
+supplementary dataset for the paper:
+
+Supervised Learning of Complete Morphological Paradigms
+Greg Durrett and John DeNero
+NAACL 2013
+
+---------
+Changelog
+---------
+
+Version 1.1: Updated the labeling of the Finnish nouns to accurately reflect
+that this dataset contains both nouns and adjectives.
+
+-------
+License
+-------
+
+These data are placed in the public domain under the Creative Commons
+Attribution-ShareAlike 3.0 Unported license.
+
+http://creativecommons.org/licenses/by-sa/3.0/
+
+-------
+General
+-------
+
+The data consists of complete inflection tables for a large number of base
+forms for five language/part of speech pairs (German nouns, German verbs,
+Spanish verbs, Finnish nouns/adjectives, and Finnish verbs). For each base
+form, we list the inflected form corresponding to each setting of relevant
+morphological attributes for that language (e.g. each German verb lists an
+inflected form for the first person singular present indicative).
+
+For Finnish, nouns and adjectives are merged because the same base template
+(fi-decl) is used for both nouns and adjectives. Moreover, these two parts of
+speech are sensitive to the same morphological features (case and number) and
+in some cases may even share morphological inflection rules.
+
+Sizes:
+German nouns: 2764 base forms, 8 inflected forms each, 22112 total items
+German verbs: 2027 base forms, 27 inflected forms each, 54729 total items
+Spanish verbs: 4055 base forms, 57 inflected forms each, 231135 total items
+Finnish nouns/adjectives: 40589 base forms, 28 inflected forms each, 1136492 total items
+Finnish verb: 7249 base forms, 53 inflected forms each, 384197 total items
+
+Development and test sets are always of size 200, and the remaining forms are
+used for the training set.
+
+--------
+Creation
+--------
+
+Complete inflection tables for nouns and verbs were extracted from the Wiki
+markup files that generate the HTML output of Wiktionary.  We developed a
+parser for the subset of the Wiki Markup Language (see
+http://en.wikipedia.org/wiki/Help:Wiki_markup) relevant to parsing inflection
+tables. This domain-specific language has substitution semantics and supports
+function application via "templates".  For most languages, repeated function
+application yields a useful intermediate result: a labeled list of all
+inflected entries in an inflection table, before any HTML formatting is applied
+to the result. These lists are exported as the comma-separated value (CSV)
+files.
+
+All English Wiktionary data was collected on February 6, 2013.  We apply the
+following post-processing rules to the output:
+--Items with spaces, hyphens, or colons are removed, including multi-word verbs.
+--If multiple inflections are present for a given attribute set, only the first
+is retained.
+--If multiple sets of inflections are present for a given base form, only the
+first is retained.
+--Entries that do not appear to be inflected forms (but instead descriptions,
+errors, etc.) are filtered.
+--Incomplete inflection tables (for instance, nouns that only appear in the
+plural form) are filtered.
+
