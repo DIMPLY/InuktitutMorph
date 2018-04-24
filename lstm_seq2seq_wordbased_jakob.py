@@ -50,6 +50,7 @@ http://www.manythings.org/anki/
 '''
 from __future__ import print_function
 
+#import tensorflow as tf
 from keras.models import Model
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing import sequence
@@ -67,7 +68,7 @@ parser.add_argument('--train-file', default='wikt_de_train4.txt',
                     help='File with tab-separated parallel training data')
 parser.add_argument('--test-file', default='wikt_de_dev4.txt',
                     help='File with tab-separated parallel test data')
-parser.add_argument('--epochs', default=100, type=int,
+parser.add_argument('--epochs', default=15, type=int,
                     help='Number of training epochs (Default: 15)')
 parser.add_argument('--num-samples', default=10000, type=int,
                     help='Number of samples to train on (Default: 10000)')
@@ -162,15 +163,17 @@ model.summary()
 # 3) Repeat with the current target token and current states
 
 if args.t:
-    #import pdb; pdb.set_trace()
-    # Compile & run training
-    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['acc'])
-    # Using sparse_categorical_crossentropy to allow for use of integer indexes
-    # for `decoder_target_data`
-    model.fit([encoder_input_data, decoder_input_data], decoder_output_data,
-          batch_size=batch_size,
-          epochs=epochs,
-          validation_split=0.2)
+#    with tf.device('/gpu:0'):
+    if True:
+        #import pdb; pdb.set_trace()
+        # Compile & run training
+        model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['acc'])
+        # Using sparse_categorical_crossentropy to allow for use of integer indexes
+        # for `decoder_target_data`
+        model.fit([encoder_input_data, decoder_input_data], decoder_output_data,
+              batch_size=batch_size,
+              epochs=epochs,
+              validation_split=0.2)
 
     # Save model
     model.save('s2sw.h5')
