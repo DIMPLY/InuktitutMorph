@@ -60,12 +60,15 @@ from nltk.translate.bleu_score import corpus_bleu
 
 parser = argparse.ArgumentParser(description='Sequence-to-sequence NMT')
 
-parser.add_argument('--train-file', default='fra-eng/fr_en.train.txt',
+parser.add_argument('-t', action='store_true', default=True, help='training mode')
+parser.add_argument('-p', action='store_true', default=False, help='prediction mode')
+
+parser.add_argument('--train-file', default='wikt_de_train4.txt',
                     help='File with tab-separated parallel training data')
-parser.add_argument('--test-file', default='fra-eng/fr_en.test_small.txt',
+parser.add_argument('--test-file', default='wikt_de_dev4.txt',
                     help='File with tab-separated parallel test data')
 parser.add_argument('--epochs', default=100, type=int,
-                    help='Number of training epochs (Default: 100)')
+                    help='Number of training epochs (Default: 15)')
 parser.add_argument('--num-samples', default=10000, type=int,
                     help='Number of samples to train on (Default: 10000)')
 args = parser.parse_args()
@@ -139,16 +142,16 @@ model.summary()
 
 #import pdb; pdb.set_trace()
 # Compile & run training
-model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['acc'])
+#model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['acc'])
 # Using sparse_categorical_crossentropy to allow for use of integer indexes
 # for `decoder_target_data`
-model.fit([encoder_input_data, decoder_input_data], decoder_output_data,
-          batch_size=batch_size,
-          epochs=epochs,
-          validation_split=0.2)
+#model.fit([encoder_input_data, decoder_input_data], decoder_output_data,
+#          batch_size=batch_size,
+#          epochs=epochs,
+#          validation_split=0.2)
 
 # Save model
-model.save('s2sw.h5')
+#model.save('s2sw.h5')
 
 # Next: inference mode (sampling).
 # Here's the drill:
@@ -157,6 +160,26 @@ model.save('s2sw.h5')
 # and a "start of sequence" token as target.
 # Output will be the next target token
 # 3) Repeat with the current target token and current states
+
+if args.t:
+    #import pdb; pdb.set_trace()
+    # Compile & run training
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['acc'])
+    # Using sparse_categorical_crossentropy to allow for use of integer indexes
+    # for `decoder_target_data`
+    model.fit([encoder_input_data, decoder_input_data], decoder_output_data,
+          batch_size=batch_size,
+          epochs=epochs,
+          validation_split=0.2)
+
+    # Save model
+    model.save('s2sw.h5')
+
+if args.p:
+    model.load_weights('s2sw.h5')
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['acc'])
+
+
 
 
 # Define sampling models
