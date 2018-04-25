@@ -50,7 +50,7 @@ http://www.manythings.org/anki/
 '''
 from __future__ import print_function
 
-#import tensorflow as tf
+import tensorflow as tf
 from keras.models import Model
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing import sequence
@@ -61,17 +61,20 @@ from nltk.translate.bleu_score import corpus_bleu
 
 parser = argparse.ArgumentParser(description='Sequence-to-sequence NMT')
 
-parser.add_argument('-t', action='store_true', default=True, help='training mode')
-parser.add_argument('-p', action='store_true', default=False, help='prediction mode')
+parser.add_argument('-t', action='store_true', default=False, help='training mode')
+parser.add_argument('-p', type=str, default='erlaubest', help='prediction mode')
+parser.add_argument('-e', action='store_true', default=False, help='evaluation mode')
 
-parser.add_argument('--train-file', default='wikt_de_train4.txt',
+parser.add_argument('--train-file', default='wikt_de_train5.txt',
                     help='File with tab-separated parallel training data')
-parser.add_argument('--test-file', default='wikt_de_dev4.txt',
+parser.add_argument('--test-file', default='wikt_de_dev5.txt',
                     help='File with tab-separated parallel test data')
 parser.add_argument('--epochs', default=15, type=int,
                     help='Number of training epochs (Default: 15)')
 parser.add_argument('--num-samples', default=10000, type=int,
                     help='Number of samples to train on (Default: 10000)')
+parser.add_argument('--model', type=str, default='s2s.hdf5')
+
 args = parser.parse_args()
 
 batch_size = 64  # Batch size for training.
@@ -176,10 +179,10 @@ if args.t:
               validation_split=0.2)
 
     # Save model
-    model.save('s2sw.h5')
+    model.save(args.model)
 
-if args.p:
-    model.load_weights('s2sw.h5')
+else:
+    model.load_weights(args.model)
     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['acc'])
 
 
@@ -247,31 +250,56 @@ def decode_sequence(input_seq):
 
     return decoded_sentence
 
-input_test_texts = []
-ref_test_texts = []
-with open(args.test_file, 'r', encoding='utf-8') as f:
-    lines = f.read().split('\n')
-for line in lines[:len(lines)-1]:
-    input_test_text, ref_test_text = line.split('\t')
-    input_test_texts.append(input_test_text)
-    ref_test_texts.append(ref_test_text)
-input_test_seqs = input_tokenizer.texts_to_sequences(input_test_texts)
-input_test_data = sequence.pad_sequences(input_test_seqs,maxlen=max_encoder_seq_length,padding='post',truncating='post')
-ref_test_seqs = target_tokenizer.texts_to_sequences(ref_test_texts)
-decoded = []
-references = []
-#import pdb; pdb.set_trace()
-for input_data,input_text in zip(input_test_data,input_test_texts):
-    input_seq = np.expand_dims(input_data,0)
-    decoded_sentence_array = decode_sequence(input_seq)
-    decoded_sentence = " ".join(decoded_sentence_array)
-    decoded.append(decoded_sentence_array)
-    print('-')
-    print('Input sentence:', input_text)
-    print('Decoded sentence:', decoded_sentence)
-for ref_seq in ref_test_seqs:
-    reference_array = [reverse_target_word_index[i] for i in ref_seq]
-    references.append([reference_array])
-#import pdb; pdb.set_trace()
-bleu_score = corpus_bleu(references,decoded)
-print('BLEU score:', bleu_score)
+if args.e:
+    input_test_texts = []
+    ref_test_texts = []
+    with open(args.test_file, 'r', encoding='utf-8') as f:
+        lines = f.read().split('\n')
+    for line in lines[:len(lines)-1]:
+        input_test_text, ref_test_text = line.split('\t')
+        input_test_texts.append(input_test_text)
+        ref_test_texts.append(ref_test_text)
+    input_test_seqs = input_tokenizer.texts_to_sequences(input_test_texts)
+    input_test_data = sequence.pad_sequences(input_test_seqs,maxlen=max_encoder_seq_length,padding='post',truncating='post')
+    ref_test_seqs = target_tokenizer.texts_to_sequences(ref_test_texts)
+    decoded = []
+    references = []
+    #import pdb; pdb.set_trace()
+    for input_data,input_text in zip(input_test_data,input_test_texts):
+        input_seq = np.expand_dims(input_data,0)
+        decoded_sentence_array = decode_sequence(input_seq)
+        decoded_sentence = " ".join(decoded_sentence_array)
+        decoded.append(decoded_sentence_array)
+        print('-')
+        print('Input sentence:', input_text)
+        print('Decoded sentence:', decoded_sentence)
+    for ref_seq in ref_test_seqs:
+        reference_array = [reverse_target_word_index[i] for i in ref_seq]
+        references.append([reference_array])
+    #import pdb; pdb.set_trace()
+    #bleu_score = corpus_bleu(references,decoded)
+    #print('BLEU score:', bleu_score)
+
+if args.p:
+    word = args.p
+    input_test_texts = []
+    ref_test_texts = []
+    input_test_texts.append(" ".join(word))
+    #ref_test_texts.append(ref_test_text)
+    input_test_seqs = input_tokenizer.texts_to_sequences(input_test_texts)
+    input_test_data = sequence.pad_sequences(input_test_seqs,maxlen=max_encoder_seq_length,padding='post',truncating='post')
+    #ref_test_seqs = target_tokenizer.texts_to_sequences(ref_test_texts)
+    decoded = []
+    #references = []
+    #import pdb; pdb.set_trace()
+    for input_data,input_text in zip(input_test_data,input_test_texts):
+        input_seq = np.expand_dims(input_data,0)
+        decoded_sentence_array = decode_sequence(input_seq)
+        decoded_sentence = " ".join(decoded_sentence_array)
+        decoded.append(decoded_sentence_array)
+        print('-')
+        print('Input sentence:', input_text)
+        print('Decoded sentence:', decoded_sentence)
+    #for ref_seq in ref_test_seqs:
+    #    reference_array = [reverse_target_word_index[i] for i in ref_seq]
+    #    references.append([reference_array])
