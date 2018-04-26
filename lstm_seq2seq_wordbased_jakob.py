@@ -59,6 +59,9 @@ import numpy as np
 import argparse
 from nltk.translate.bleu_score import corpus_bleu
 
+import metrics
+
+
 parser = argparse.ArgumentParser(description='Sequence-to-sequence NMT')
 
 parser.add_argument('-t', action='store_true', default=False, help='training mode')
@@ -264,21 +267,50 @@ if args.e:
     ref_test_seqs = target_tokenizer.texts_to_sequences(ref_test_texts)
     decoded = []
     references = []
+
     #import pdb; pdb.set_trace()
     for input_data,input_text in zip(input_test_data,input_test_texts):
         input_seq = np.expand_dims(input_data,0)
         decoded_sentence_array = decode_sequence(input_seq)
         decoded_sentence = " ".join(decoded_sentence_array)
         decoded.append(decoded_sentence_array)
-        print('-')
-        print('Input sentence:', input_text)
-        print('Decoded sentence:', decoded_sentence)
+        #print('-')
+        #print('Input sentence:', input_text)
+        #print('Decoded sentence:', decoded_sentence)
     for ref_seq in ref_test_seqs:
         reference_array = [reverse_target_word_index[i] for i in ref_seq]
         references.append([reference_array])
     #import pdb; pdb.set_trace()
     #bleu_score = corpus_bleu(references,decoded)
     #print('BLEU score:', bleu_score)
+
+    precision = metrics.tensor_wrapper(metrics.precision)
+    recall = metrics.tensor_wrapper(metrics.recall)
+    fmeasure = metrics.tensor_wrapper(metrics.fmeasure)
+
+    p_accum = r_accum = f_accum = 0.0
+    for ygold, ypred, x in zip(references, decoded, input_test_texts):
+        ygold, ypred = " ".join(ygold[0]), " ".join(ypred)
+        print('-')
+        print('Input text:', x)
+        print('Decoded:', ypred)
+        print('Reference:', ygold)
+        prec, rec, fscore = metrics.precision(ygold.split(" ; "), ypred.split(" ; ")), metrics.recall(ygold.split(" ; "), ypred.split(" ; ")), metrics.fmeasure(ygold.split(" ; "), ypred.split(" ; "))
+        #per_item_metrics.append(prec, rec, fscore)
+        print(f'Precision: {prec}', f'Recall: {rec}', f'Fmeasure: {fscore}')
+        p_accum += prec
+        r_accum += rec
+        f_accum += fscore
+    assert len(references) == len(decoded)
+    num_examples = len(references)
+    p_mean = p_accum/num_examples
+    r_mean = r_accum/num_examples
+    f_mean = f_accum/num_examples
+
+
+    print('\n--\n--')
+    print(f'Mean Precision: {p_mean}', f'Mean Recall: {r_mean}', f'Mean Fmeasure: {f_mean}')
+
 
 if args.p:
     word = args.p
