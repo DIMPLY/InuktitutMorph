@@ -1,0 +1,5 @@
+char-based
+Mean Precision: 0.8161672908863924 Mean Recall: 0.8166701795915281 Mean Fmeasure: 0.8068703966558924
+
+segment-based
+Mean Precision: 0.6130113332360526 Mean Recall: 0.608481551739979 Mean Fmeasure: 0.6002411446231675
