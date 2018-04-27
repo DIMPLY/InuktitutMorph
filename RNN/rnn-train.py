@@ -2,6 +2,7 @@ import numpy as np
 import keras
 import argparse
 import codecs
+import pickle
 import matplotlib.pyplot as plot
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing import sequence
@@ -14,7 +15,7 @@ parser.add_argument('--train-file', default='train-pre2',
                     help='File with sentence separated training data')
 parser.add_argument('--dev-file', default='pre2',
                     help='File with sentence separated development data')
-parser.add_argument('--max-length', default=25, type=int,
+parser.add_argument('--max-length', default=40, type=int,
                     help='Maximum sequence length in tokens (Default: 25)')
 parser.add_argument('--epochs', default=10, type=int,
                     help='Number of training epochs (Default: 10)')
@@ -44,6 +45,9 @@ if __name__ == "__main__":
     tokenizer.fit_on_texts(corpusin)
     print(tokenizer.word_index)
     print(tokenizer.word_counts)
+    with open('tokenizer.pickle','wb') as handle:
+        pickle.dump(tokenizer,handle,protocol=pickle.HIGHEST_PROTOCOL)
+
 
     train_in = [seq_start + " " + " ".join(list(x[0])) + " " + seq_end for x in trainpairs]
     train_out = [[3] + [int(c)+1 for c in p[1]] + [4] for p in trainpairs] # For output, 1-> 0, 2-> 1, 3-> start, 4-> ent
@@ -79,12 +83,12 @@ if __name__ == "__main__":
     model.compile(optimizer='adam',loss='sparse_categorical_crossentropy', metrics=['acc'])
 
     model.summary()
-    history = model.fit(train_in_seq,train_out_seq,
+    history = model.fit(train_in_seq+dev_in_seq,train_out_seq+dev_out_seq,
                         epochs = args.epochs,
                         batch_size = batch_size,
-                        validation_data = (dev_in_seq,dev_out_seq_fixed),
+                        # validation_data = (dev_in_seq,dev_out_seq_fixed),
                         validation_split=0.0)
-
+    model.save("hdf5")
     # Charting perplexity over the training epochs
 
     if args.chart:
@@ -124,9 +128,21 @@ if __name__ == "__main__":
             return "e"
 
     predict = model.predict(dev_in_seq, batch_size=batch_size)
-    for pre,gold in zip(predict, dev_out_seq):
-        print(" ".join([map(np.argmax(p_group,axis=0)) for p_group in pre]))
-        print(" ".join([map(label) for label in gold]))
+
+    words = [pair[0] for pair in devpairs]
+    for pre,gold,word in zip(predict, dev_out_seq, words):
+        pre = [map(np.argmax(p_group,axis=0)) for p_group in pre]
+        print("".join([map(label) for label in gold][1:]))
+        try:
+            result = pre[1:pre.index('e')]
+            positions = [i for i, x in enumerate(result) if x == '1']
+            print(word)
+            print("".join(result))
+            for i, pos in enumerate(positions[:-1]):
+                print(word[pos:positions[i + 1]], end=" ")
+            print(word[positions[-1]:] + "\n")
+        except:
+            print(word + "  $$\n" + "".join(pre[1:]) + "\n")
         print()
 
     for name, value in zip(model.metrics_names,model.evaluate(dev_in_seq, dev_out_seq_fixed, batch_size=batch_size)):
