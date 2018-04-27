@@ -316,7 +316,11 @@ if args.p:
     word = args.p
     input_test_texts = []
     ref_test_texts = []
-    input_test_texts.append(" ".join(word))
+    if '_' in word:
+        _word, pos = word.split('_')
+        input_test_texts.append(' '.join(list(_word) + ['_', pos]))
+    else:
+        input_test_texts.append(' '.join(word))
     #ref_test_texts.append(ref_test_text)
     input_test_seqs = input_tokenizer.texts_to_sequences(input_test_texts)
     input_test_data = sequence.pad_sequences(input_test_seqs,maxlen=max_encoder_seq_length,padding='post',truncating='post')
@@ -327,7 +331,7 @@ if args.p:
     for input_data,input_text in zip(input_test_data,input_test_texts):
         input_seq = np.expand_dims(input_data,0)
         decoded_sentence_array = decode_sequence(input_seq)
-        decoded_sentence = " ".join(decoded_sentence_array)
+        decoded_sentence = ' '.join(decoded_sentence_array)
         decoded.append(decoded_sentence_array)
         print('-')
         print('Input sentence:', input_text)
