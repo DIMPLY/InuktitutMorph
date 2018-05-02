@@ -7,36 +7,43 @@ The referrences and irregular formats in "temp" are then eliminated and the resu
 """
 
 # python3 xxx.py train
-# python3 xxx.py dev
+# python3 xxx.py devel
 
 import sys 
 
-with open("rnn-"+sys.argv[1]+".labels.ger") as f:
+with open("final-pre-"+sys.argv[1]) as f:
     for line in f:
         line = line.strip()
         word, morph = line.split("\t")
-        morphs = morph.split(", ")
+        morphs = morph.split(",")
         _morphs = []
+        _positions = []
         print(word, end="\t")
         for m in morphs:
             segments = []
+            positions = []
             sstart=0
             lastIsFound=True
             for segment in m.split():
                 #if not segment=='$$':
+                #try:
+                segment,type=segment.split('_')
+                #except:
+                #    print(segment)
+                #    exit()
                 pos=word.find(segment,sstart)
                 if pos==-1:
                     if not lastIsFound:
-                        print('continuous', end=" ")
+                        positions.append('continuous_'+type)
                     else:
-                        print(sstart, end=" ")
+                        positions.append(str(sstart)+'_'+type)
                     lastIsFound=False
                     sstart+=1
                 else:
                     lastIsFound=True
                     sstart=pos+len(segment)
-                    print(pos, end=" ")
+                    positions.append(str(pos)+'_'+type)
                 segments.append(segment)
-            print(" + ", end="")
+            _positions.append(" ".join(positions))
             _morphs.append(" ".join(segments))
-        print("\t" + " + ".join(_morphs))
+        print(" + ".join(_positions) + "\t" + " + ".join(_morphs))

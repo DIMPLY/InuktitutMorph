@@ -7,10 +7,12 @@ import re,sys
 if sys.argv[1]=="train":
     preffix="train-"
 else:
-    preffix=""
+    preffix="devel-"
 
-f = open(preffix+"pre","r")
-f2=open(preffix+"pre2","w")
+#f = open(preffix+"pre","r")
+#f2=open(preffix+"pre2","w")
+f = open(preffix+"data","r")
+f2=open(preffix+"data2","w")
 for l in f:
     try:
         word, splitPos = l.strip().split('\t')
@@ -22,7 +24,11 @@ for l in f:
         outStr = ['0']*len(word)
         for pos in posList:
             try:
-                outStr[int(pos)]='1'
+                p,t = pos.split('_')
+            except:
+                print(pos)
+            try:
+                outStr[int(p)]=t
             except:
                 print(word, posList)
         f2.write(word+"\t"+"".join(outStr)+"\n")
